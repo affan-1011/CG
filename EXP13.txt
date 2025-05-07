@@ -1,78 +1,77 @@
-/*
-13 Implement animation principles for any object
-*/
 #include <GL/glut.h>
+#include <iostream>
 #include <cmath>
 
-// Ball properties
-float xBall = 0.0f;            // X position (fixed)
-float yBall = 0.0f;            // Y position (changes over time)
-float radius = 0.1f;           // Radius of the ball
-float ySpeed = 0.02f;          // Speed of vertical movement
-bool movingUp = true;          // Direction flag
+using namespace std;
 
-// Initialization function
+float x = 100, y = 100; // Position of object
+float dx = 2, dy = 1;    // Speed of movement
+float obj_size = 30;      // Size of object (renamed from size to obj_size)
+int windowWidth = 640, windowHeight = 480;
+
 void init() {
-    glClearColor(0.9f, 0.9f, 0.9f, 1.0f); // Set background color
+    glClearColor(1, 1, 1, 0);
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0);     // Define coordinate system
+    gluOrtho2D(0, windowWidth, 0, windowHeight);
 }
 
-// Display callback function
+void drawObject() {
+    // Draw a simple circle
+    glColor3f(1, 0, 0);
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < 360; i += 30) {
+        float rad = i * M_PI / 180;
+        glVertex2f(x + obj_size * std::cos(rad), y + obj_size * std::sin(rad));
+    }
+    glEnd();
+    glFlush();
+}
+
+void animate(int value) {
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Update position with bouncing
+    x += dx;
+    y += dy;
+
+    // Bounce off walls
+    if (x > windowWidth - obj_size || x < obj_size) dx = -dx;
+    if (y > windowHeight - obj_size || y < obj_size) dy = -dy;
+
+    // Draw the object
+    drawObject();
+
+    // Call animate again after 16ms (about 60fps)
+    glutTimerFunc(16, animate, 0);
+}
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glLoadIdentity();
-
-    // Move to the ball's current position
-    glTranslatef(xBall, yBall, 0.0f);
-
-    // Set ball color to red
-    glColor3f(1.0f, 0.0f, 0.0f);
-
-    // Draw the ball as a circle
-    glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(0.0f, 0.0f); // Center of circle
-        for (int angle = 0; angle <= 360; angle += 10) {
-            float theta = angle * 3.14159f / 180.0f;
-            glVertex2f(radius * cos(theta), radius * sin(theta));
-        }
-    glEnd();
-
-    glutSwapBuffers(); // Swap buffers for smooth animation
+    drawObject();
 }
 
-// Timer callback function
-void update(int value) {
-    // Update the ball's vertical position
-    if (movingUp) {
-        yBall += ySpeed;
-        if (yBall >= 0.8f) {
-            movingUp = false; // Change direction at top boundary
-        }
-    } else {
-        yBall -= ySpeed;
-        if (yBall <= -0.8f) {
-            movingUp = true; // Change direction at bottom boundary
-        }
-    }
-
-    glutPostRedisplay();              // Request display update
-    glutTimerFunc(16, update, 0);     // Schedule next update (~60 FPS)
-}
-
-// Main function
 int main(int argc, char** argv) {
+    cout << "Initial position (x y): ";
+    cin >> x >> y;
+    cout << "Speed (dx dy): ";
+    cin >> dx >> dy;
+    cout << "Size: ";
+    cin >> obj_size;
+
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // Enable double buffering
-    glutInitWindowSize(600, 600);                // Set window size
-    glutCreateWindow("Bouncing Ball Animation"); // Create window with title
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(windowWidth, windowHeight);
+    glutInitWindowPosition(200, 200);
+    glutCreateWindow("Animation");
 
-    init();                     // Initialize rendering settings
-    glutDisplayFunc(display);   // Register display callback
-    glutTimerFunc(0, update, 0); // Start the animation loop
-
-    glutMainLoop();             // Enter the event-processing loop
+    init();
+    glutDisplayFunc(display);
+    glutTimerFunc(0, animate, 0);
+    glutMainLoop();
     return 0;
 }
-
+/*Initial position (x y): 150 200
+Speed (dx dy): 4 3
+Size: 25
+*/
