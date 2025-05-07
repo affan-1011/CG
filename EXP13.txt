@@ -1,0 +1,78 @@
+/*
+13 Implement animation principles for any object
+*/
+#include <GL/glut.h>
+#include <cmath>
+
+// Ball properties
+float xBall = 0.0f;            // X position (fixed)
+float yBall = 0.0f;            // Y position (changes over time)
+float radius = 0.1f;           // Radius of the ball
+float ySpeed = 0.02f;          // Speed of vertical movement
+bool movingUp = true;          // Direction flag
+
+// Initialization function
+void init() {
+    glClearColor(0.9f, 0.9f, 0.9f, 1.0f); // Set background color
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0);     // Define coordinate system
+}
+
+// Display callback function
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+
+    // Move to the ball's current position
+    glTranslatef(xBall, yBall, 0.0f);
+
+    // Set ball color to red
+    glColor3f(1.0f, 0.0f, 0.0f);
+
+    // Draw the ball as a circle
+    glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(0.0f, 0.0f); // Center of circle
+        for (int angle = 0; angle <= 360; angle += 10) {
+            float theta = angle * 3.14159f / 180.0f;
+            glVertex2f(radius * cos(theta), radius * sin(theta));
+        }
+    glEnd();
+
+    glutSwapBuffers(); // Swap buffers for smooth animation
+}
+
+// Timer callback function
+void update(int value) {
+    // Update the ball's vertical position
+    if (movingUp) {
+        yBall += ySpeed;
+        if (yBall >= 0.8f) {
+            movingUp = false; // Change direction at top boundary
+        }
+    } else {
+        yBall -= ySpeed;
+        if (yBall <= -0.8f) {
+            movingUp = true; // Change direction at bottom boundary
+        }
+    }
+
+    glutPostRedisplay();              // Request display update
+    glutTimerFunc(16, update, 0);     // Schedule next update (~60 FPS)
+}
+
+// Main function
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // Enable double buffering
+    glutInitWindowSize(600, 600);                // Set window size
+    glutCreateWindow("Bouncing Ball Animation"); // Create window with title
+
+    init();                     // Initialize rendering settings
+    glutDisplayFunc(display);   // Register display callback
+    glutTimerFunc(0, update, 0); // Start the animation loop
+
+    glutMainLoop();             // Enter the event-processing loop
+    return 0;
+}
+

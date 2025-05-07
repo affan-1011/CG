@@ -1,0 +1,64 @@
+/*
+3 Implement Bresenham line drawing algorithm to draw Solid line. Divide the
+screen in four quadrants with center as (0, 0). The line should work for all the slopes
+*/
+
+#include <GL/glut.h>
+#include <cmath>
+
+// Function to draw X and Y axes
+void drawAxes() {
+    glColor3f(0.0f, 0.0f, 0.0f); // Black color for axes
+    glBegin(GL_LINES);
+        glVertex2i(-320, 0); glVertex2i(320, 0);   // X-axis
+        glVertex2i(0, -240); glVertex2i(0, 240);   // Y-axis
+    glEnd();
+}
+
+// Bresenham's Line Drawing Algorithm for all slopes
+void drawSolidLine(int x1, int y1, int x2, int y2) {
+    int dx = std::abs(x2 - x1);
+    int dy = std::abs(y2 - y1);
+    int sx = (x2 >= x1) ? 1 : -1;
+    int sy = (y2 >= y1) ? 1 : -1;
+    int err = dx - dy;
+
+    glBegin(GL_POINTS);
+    while (true) {
+        glVertex2i(x1, y1);
+        if (x1 == x2 && y1 == y2) break;
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x1 += sx; }
+        if (e2 < dx)  { err += dx; y1 += sy; }
+    }
+    glEnd();
+}
+
+// Display callback
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawAxes();
+
+    glColor3f(1.0f, 0.0f, 0.0f); // Red color for solid line
+    drawSolidLine(-150, -100, 150, 100);  // Example line
+
+    glFlush();
+}
+
+// Initialization
+void init() {
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);  // White background
+    gluOrtho2D(-320, 320, -240, 240);     // Coordinate system
+}
+
+// Main function
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(640, 480);
+    glutCreateWindow("Solid Line using Bresenham's Algorithm");
+    init();
+    glutDisplayFunc(display);
+    glutMainLoop();
+    return 0;
+}
